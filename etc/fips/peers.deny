@@ -1,0 +1,8 @@
+# /etc/fips/peers.deny
+#
+# Optional extra layer on top of `node.discovery.nostr.policy:
+# configured_only` in fips.yaml. One npub per line; auto-reloaded on
+# mtime change (no restart needed). Blocks a specific npub even if it
+# somehow ends up in your peers list later.
+#
+# npub1someknownbadactorxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
