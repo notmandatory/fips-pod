@@ -24,6 +24,7 @@ start:
   -v ./ssh:/root/.ssh:Z \
   -v ./etc/dnsmasq.conf:/etc/dnsmasq.conf:Z \
   -v ./etc/dnsmasq.d:/etc/dnsmasq.d:Z \
+  -v /etc/resolv.conf:/etc/resolv.dnsmasq.conf:Z \
   debian13-fips
 
 [doc("Restart a stopped fips-node.")]
