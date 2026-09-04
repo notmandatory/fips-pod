@@ -2,6 +2,10 @@
 @list:
   just --list
 
+[doc("Initialize the podman machine")]
+minit:
+  podman machine init
+
 [doc("Start the podman machine.")]
 mstart:
   podman machine start
@@ -48,5 +52,6 @@ shell:
   podman exec -it fips-node bash
 
 [doc("Show fips-node log.")]
-log:
-  podman logs fips-node -f
+logs:
+  podman logs fips-node
+  

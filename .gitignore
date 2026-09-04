@@ -1,2 +1,5 @@
+
+fips.key
+fips.pub
 *.bak
 ssh/
