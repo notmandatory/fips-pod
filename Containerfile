@@ -35,7 +35,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
 WORKDIR /usr/src
 RUN git clone https://github.com/jmcorgan/fips.git
 WORKDIR /usr/src/fips
-RUN git reset --hard v0.4.2
+RUN git reset --hard v0.5.0
 RUN cargo install cargo-deb && cargo deb
 # Artifact: /usr/src/fips/target/debian/fips_*.deb
 

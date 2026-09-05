@@ -1,18 +1,12 @@
 # fips-pod
 
-A Podman pod that runs a [FIPS](https://github.com/jmcorgan/fips) mesh
-daemon alongside an SSH daemon, designed primarily for macOS hosts that want
-to be a client on the FIPS network and reach servers on that network via SSH.
+A Podman pod that runs a [FIPS](https://github.com/jmcorgan/fips) mesh daemon alongside an SSH daemon, designed primarily for macOS hosts that wantto be a client on the FIPS network and reach servers on that network via SSH.
 
-Because the pod runs its own `sshd`, it can also be used as an SSH
-`ProxyJump` host — your Mac talks SSH to the pod, and the pod talks to
-`*.fips` destinations over the mesh.
+Because the pod runs its own `sshd`, it can also be used as an SSH `ProxyJump` host — your Mac talks SSH to the pod, and the pod talks to `*.fips` destinations over the mesh.
 
 ## What it does
 
-The pod (`fips-pod`) is made of three single-process containers that share
-one network namespace, so loopback (`127.0.0.1` / `::1`) and the `fips0`
-mesh interface are visible to all of them:
+The pod (`fips-pod`) is made of three single-process containers that share one network namespace, so loopback (`127.0.0.1` / `::1`) and the `fips0` mesh interface are visible to all of them:
 
 ```
 ┌─────────────────────────────── pod: fips-pod ────────────────────────────────┐
@@ -31,20 +25,11 @@ mesh interface are visible to all of them:
 └────────────────────── published: 127.0.0.1:2222:22 (on the pod) ─────────────┘
 ```
 
-- **`fips`** — the FIPS daemon (built from source, pinned to `v0.4.2` on
-  Debian 13), run as PID 1 via `exec` for clean signal handling. Brings up
-  the `fips0` TUN interface, then `entrypoint.sh` loads the
-  `/etc/fips/fips.nft` baseline: default-deny on all unsolicited inbound
-  mesh traffic. The only privileged container in the pod.
-- **`fips-dnsmasq`** — the pod's resolver. Forwards `.fips` queries to the
-  FIPS daemon's DNS responder on `[::1]:5354` and everything else to the
-  host's upstream resolvers. Binds loopback only.
-- **`fips-sshd`** — SSH server published to the host on `127.0.0.1:2222`
-  (only the local machine can reach it), plus the SSH client used for
-  outbound connections to `*.fips` servers.
+- **`fips`** — the FIPS daemon (built from source on Debian 13), run as PID 1 via `exec` for clean signal handling. Brings up  the `fips0` TUN interface, then `entrypoint.sh` loads the `/etc/fips/fips.nft` baseline: default-deny on all unsolicited inbound mesh traffic. The only privileged container in the pod.
+- **`fips-dnsmasq`** — the pod's resolver. Forwards `.fips` queries to the FIPS daemon's DNS responder on `[::1]:5354` and everything else to the host's upstream resolvers. Binds loopback only.
+- **`fips-sshd`** — SSH server published to the host on `127.0.0.1:2222` (only the local machine can reach it), plus the SSH client used for outbound connections to `*.fips` servers.
 
-All configuration lives on the host and is bind-mounted in, so edits on the
-host take effect on pod restart (no image rebuild needed).
+All configuration lives on the host and is bind-mounted in, so edits on the host take effect on pod restart (no image rebuild needed).
 
 ## Requirements
 
@@ -53,16 +38,11 @@ host take effect on pod restart (no image rebuild needed).
 
 ## First-run setup
 
-Secrets are intentionally **not** committed to this repo (see `.gitignore`).
-Before starting the pod you need:
+Secrets are intentionally **not** committed to this repo (see `.gitignore`). Before starting the pod you need:
 
-1. **FIPS identity** — nothing to do: `fips.yaml` sets
-   `node.identity.persistent: true`, so on first start the daemon generates
-   a keypair and saves it to `etc/fips/fips.key` / `etc/fips/fips.pub`
-   (on the host, via the bind mount). Your node keeps the same identity
-   across restarts.
-2. **SSH keys** — populate the `ssh/` directory (mounted to `/root/.ssh`
-   in the `fips-sshd` container):
+1. **FIPS identity** — nothing to do:
+   `fips.yaml` sets `node.identity.persistent: true`, so on first start the daemon generates a keypair and saves it to `etc/fips/fips.key` / `etc/fips/fips.pub` (on the host, via the bind mount). Your node keeps the same identity across restarts.
+2. **SSH keys** — populate the `ssh/` directory (mounted to `/root/.ssh` in the `fips-sshd` container):
    - `authorized_keys` — public keys allowed to log in to the pod.
    - `id_ed25519` / `id_ed25519.pub` — optional; the key the pod uses for
      *outbound* SSH to servers on the FIPS network.
@@ -128,8 +108,7 @@ ssh fips-pod                      # shell inside the pod's sshd container
 ssh user@test-us04.fips           # one hop, via ProxyJump
 ```
 
-Name resolution for `*.fips` happens *inside* the pod (dnsmasq → the FIPS
-DNS responder), so the Mac itself never needs mesh-aware DNS.
+Name resolution for `*.fips` happens *inside* the pod (dnsmasq → the FIPS DNS responder), so the Mac itself never needs mesh-aware DNS.
 
 ## Configuration
 
@@ -163,7 +142,7 @@ Notes:
 ## Repository layout
 
 ```
-Containerfile    # multi-stage build: fips (Rust build of FIPS v0.4.2), dnsmasq, sshd
+Containerfile    # multi-stage build: fips (Rust build of FIPS), dnsmasq, sshd
 Justfile         # podman machine / image / pod lifecycle recipes
 entrypoint.sh    # fips container: exec fips as PID 1; load nftables baseline once fips0 is up
 etc/fips/        # fips.yaml, hosts, fips.nft, peers.allow/deny, identity keys (gitignored)
